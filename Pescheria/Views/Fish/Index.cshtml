@@ -1,0 +1,16 @@
+﻿@{
+    var miaString = " altro pezzo aggiunto";
+}
+
+<h2>@(ViewBag.saluto + miaString)</h2>
+
+<h3>@ViewBag.method</h3>
+
+<h3>@Model[0].Name</h3>
+
+<ul>
+    @foreach(var fish in Model)
+    {
+        <li>@fish.Name</li>
+    }
+</ul>
