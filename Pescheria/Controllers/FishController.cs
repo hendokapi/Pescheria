@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Pescheria.Models;
 
 
@@ -35,24 +36,49 @@ namespace Pescheria.Controllers
             return View();
         }
 
-        public IActionResult GetSlug()
+        // indirizzo per gestire il submit del form della pagina Add
+        [HttpPost]
+        public IActionResult Add(string name, bool isSeaFish, int price)
         {
-            return Json("questo-slug-buono");
-        }
-
-        public IActionResult GetFile()
-        {
-            return File("TODO: get the path here", "text/plain");
+            // validare i dati
+            var fish = StaticDb.Add(name, isSeaFish, price * 100);
+            //return Redirect("https://localhost:7029/fish/details/" + fish.FishId);
+            return RedirectToAction("Details", new { id = fish.FishId });
         }
 
         // pagina con un form per la modififica di un pesce
         public IActionResult Edit(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var fish = StaticDb.GetById(id);
+            // gestire il caso di id non passato
+            return View(fish);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Fish fish)
         {
             // gestire il caso di id non passato
             return View();
         }
 
         // rotta (indirizzo) per poter elimanare un pesce
+
+        /*********************/
+
+        public IActionResult GetFile()
+        {
+            return File("TODO: get the path here", "text/plain");
+        }
+
+        public IActionResult GetSlug()
+        {
+            return Json("questo-slug-buono");
+        }
     }
 }
 

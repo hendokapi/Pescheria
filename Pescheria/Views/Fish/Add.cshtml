@@ -1,14 +1,6 @@
-﻿@{
-    Layout = "_LayoutSecondario";
-}
-
-@* @section Scripts {
-    <script>
-        console.log("ciao")
-    </script>
-} *@
-
-
-
-<h2>questo va nel placeholder di default</h2>
-<p>lorem</p>
+﻿<form asp-controller="Fish" asp-action="Add" method="post">
+    Name: <input type="text" name="name" /><br />
+    Sea Fish: <input type="checkbox" name="isSeaFish" value="true" /><br />
+    Price (€): <input type="number" name="price" /><br />
+    <button>Submit</button>
+</form>
