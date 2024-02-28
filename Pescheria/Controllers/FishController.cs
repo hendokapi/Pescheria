@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Pescheria.Models;
 
@@ -8,20 +9,24 @@ namespace Pescheria.Controllers
     public class FishController : Controller
     {
         // lista dei pesci
+        [HttpGet]
         public IActionResult Index()
         {
-            ViewBag.method = Request.Method;
-            ViewBag.saluto = "Ciao a tutti";
-
             return View(StaticDb.GetAll());
         }
 
         // pagina di dettaglio di un singolo pesce
+        [HttpGet]
         public IActionResult Details([FromRoute] int? id)
         {
             if (id.HasValue)  // (id is null)
             {
-                return View(StaticDb.GetById(id));
+                var fish = StaticDb.GetById(id);
+                if (fish is null)
+                {
+                    return View("Error");
+                }
+                return View(fish);
             }
             else
             {
@@ -31,6 +36,7 @@ namespace Pescheria.Controllers
         }
 
         // pagina con un form per l'aggiunta di un nuovo pesce
+        [HttpGet]
         public IActionResult Add()
         {
             return View();
@@ -47,32 +53,71 @@ namespace Pescheria.Controllers
         }
 
         // pagina con un form per la modififica di un pesce
-        public IActionResult Edit(int? id)
+        [HttpGet]
+        public IActionResult Edit([FromRoute] int? id)
         {
-            if (id is null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            if (id is null) return RedirectToAction("Index", "Fish");
 
             var fish = StaticDb.GetById(id);
-            // gestire il caso di id non passato
+            if (fish is null) return View("Error");
+
             return View(fish);
         }
 
         [HttpPost]
         public IActionResult Edit(Fish fish)
         {
-            // gestire il caso di id non passato
-            return View();
+            var updatedFish = StaticDb.Modify(fish);
+            if (updatedFish is null) return View("Error");
+
+            return RedirectToAction("Details", new { id = updatedFish.FishId });
         }
 
         // rotta (indirizzo) per poter elimanare un pesce
+        [HttpGet]
+        public IActionResult Delete(int? id)
+        {
+            var fish = StaticDb.GetById(id);
+            return View(fish);
+        }
+
+        [HttpPost]
+        public IActionResult Delete(Fish fish)
+        {
+            var fishDeleted = StaticDb.HardDelete(fish.FishId);
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult SoftDelete(Fish fish)
+        {
+            var fishDeleted = StaticDb.SoftDelete(fish.FishId);
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult Cestino()
+        {
+            var fishesDeleted = StaticDb.GetAllDeleted();
+            return View(fishesDeleted);
+        }
+
+        [HttpPost]
+        public IActionResult Recover(Fish fish)
+        {
+            var recoveredFish = StaticDb.Recover(fish.FishId);
+            if (recoveredFish is null)
+            {
+                return RedirectToAction("Cestino");
+            }
+            return RedirectToAction("Details", new {id = recoveredFish.FishId });
+        }
 
         /*********************/
 
         public IActionResult GetFile()
         {
-            return File("TODO: get the path here", "text/plain");
+            return PhysicalFile(Directory.GetCurrentDirectory() + "\\Contents\\spedire.txt", "text/plain");
         }
 
         public IActionResult GetSlug()
